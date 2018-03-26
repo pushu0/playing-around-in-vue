@@ -1,7 +1,7 @@
 <template>
   <div id="container">
     <Header></Header>
-    <HowItWorks :activeindex="this.state"></HowItWorks>
+    <HowItWorks ref="howitworks"></HowItWorks>
     <div id="bg"></div>
   </div>
 
@@ -29,8 +29,6 @@ export default {
     Header, HowItWorks
   },
   created: function() {
-
-
   },
   destroyed: function(){
   },
@@ -41,11 +39,11 @@ export default {
 
     })
     document.body.addEventListener("wheel", this.handleScroll);
-    this.fadeInTape();
-TweenMax.set("#box", {scale: 1.1, rotation: 90, transformOrigin: "200% 200%"})
-    var boxCover = new TimelineMax();
+    // this.fadeInTape();
+// TweenMax.set("#box", {scale: 1.1, rotation: 90, transformOrigin: "200% 200%"})
+    // var boxCover = new TimelineMax();
     //boxCover
-    console.log()
+    // console.log()
 
   },
   computed: {
@@ -53,50 +51,24 @@ TweenMax.set("#box", {scale: 1.1, rotation: 90, transformOrigin: "200% 200%"})
   },
   methods: {
     handleScroll: function (e) {
-      if(e.deltaY > 0) {
-        this.changeState(1);
-        //this.fadeOutTape();
-      } else {
-        this.changeState(-1);
 
-      }
+        if(e.deltaY > 0) {
+          this.changeState(1);
 
-        console.log(e.deltaY);
+          // this.fadeOutTape();
+        } else {
+           this.changeState(-1);
 
-
+        }
       },
       changetext: function() {
 
       },
+      //
       changeState : _.debounce(function(counter){
-        this.state += counter;
-      }, 300),
-      fadeInTape: function (){
-        var fadeIn = new TimelineMax()
-        // fadeIn
-        // .set("#box", {scale: 1.1, rotation: 90, transformOrigin: "200% 200%"})
-        //
-        // .from("#vhs", 0.8, {rotation: 90, transformOrigin: "200% 100%", ease: Power2.easeOut }, "fadeIn")
-        //
-        // .from("h6", 1, {rotation: 90, transformOrigin: "-200% 100%", ease: Power2.easeOut }, "fadeIn")
-        // .to("#vhs-tape", 3.3, {rotation: 360, transformOrigin: "50% 50%", repeat: -1, ease:Linear.easeNone}, "fadeIn")
-
-      },
-      fadeOutTape: function (){
-        var fadeOut = new TimelineMax();
-        // fadeOut
-        //   .to("h1", 0.75, {rotation: 90, transformOrigin: "-200% 200%", ease: Power2.easeIn }, "fadeIn")
-        //   .to("h6", 0.6, {rotation: 90, transformOrigin: "-200% 200%", ease: Power2.easeIn }, "fadeIn")
-        //   .to("#box", 1, {scale: 1.01, rotation: 0, transformOrigin: "200% 100%",  ease:Power2.easeOut},"fadeIn")
-        //   .to("#box", 0.3, {scale: 1, transformOrigin: "200% 100%", ease:Power2.easeIn} )
-        //   .from("#stamp", 0.5, {scale: 2, opacity: 0, ease:Power2.easeIn})
-
-          // HowItWorks.changetext()
-          this.state += 1;
-
-
-
-      }
+        // this.state += counter;
+        this.$refs.howitworks.nextprevState(counter);
+      }, 500)
   }
 
 }
