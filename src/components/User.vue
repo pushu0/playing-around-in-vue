@@ -1,7 +1,8 @@
 <template>
   <div id="container">
     <Header></Header>
-    <HowItWorks ref="howitworks"></HowItWorks>
+    <!-- <HowItWorks ref="howitworks"></HowItWorks> -->
+    <vhsToDvd ref="howitworks"></vhsToDvd>
     <div id="bg"></div>
   </div>
 
@@ -9,6 +10,7 @@
 <script>
 import Header from '@/components/Header';
 import HowItWorks from '@/components/HowItWorks';
+import vhsToDvd from '@/components/vhsToDvd';
 //typical import
 import {TweenMax, Power2, TimelineLite} from "gsap";
 import _ from "lodash";
@@ -26,7 +28,7 @@ export default {
     }
   },
   components: {
-    Header, HowItWorks
+    Header, HowItWorks, vhsToDvd
   },
   created: function() {
   },
@@ -93,7 +95,6 @@ h1, h6 {
   height: 100vh;
   overflow:hidden;
   position: relative;
-
 }
 
 </style>
