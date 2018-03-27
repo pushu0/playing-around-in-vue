@@ -15,15 +15,18 @@
               </ul>
             </div>
             <div class="right">
-              <button class="decrease"></button>
-              <div class="amount">1</div>
-              <button class="increase"></button>
+              <button class="decrease" @click="removeitem(tape)"></button>
+              <ul class="amount" :style="'translateY('+tape.amount+'em)'">
+                <!-- <li v-for="(amount, index) in 20">{{index}}</li> -->
+                <li>{{tape.amount}}</li>
+              </ul>
+              <button class="increase" @click="additem(tape)"></button>
             </div>
           </div>
         </section>
         <section>
           <h3>WHAT DO YOU WANT TO GET BACK?</h3>
-          <div v-for="(item, index) in returned" class="breakdown">
+          <div v-for="(item, index) in returned" :class="[toClass(item.name), 'breakdown']">
             <div class="left">
               <ul>
                 <li>{{item.name}}</li>
@@ -31,11 +34,12 @@
               </ul>
             </div>
             <div class="right">
-              <button class="decrease" @click="totalAmount-=item.price"></button>
-              <ul class="amount">
+              <button class="decrease" @click="removeitem(item)"></button>
+              <ul class="amount" :style="{transform: 'translateY(-'+item.amount*50+'px)'}">
                 <li v-for="(amount, index) in 20">{{index}}</li>
+                <!-- <li>{{item.amount}}</li> -->
               </ul>
-              <button class="increase" @click="totalAmount+=item.price"></button>
+              <button class="increase" @click="additem(item)"></button>
             </div>
           </div>
 
@@ -52,7 +56,12 @@
             </div>
           </div>
         </section>
+        <button class="add-to-cart" :disabled=isDisabled>Add to Cart</button>
       </div>
+
+      <!-- <ul>
+        <li v-for="item in sendToCart">{{item.name}}</li>
+      </ul> -->
       <div class="bg"></div>
   </div>
 </template>
@@ -64,7 +73,8 @@ export default {
       tapes: {
           'vhs': {
             name: 'VHS',
-            price: 15
+            price: 15,
+            amount: 1
           }
         },
         returned:{
@@ -84,7 +94,88 @@ export default {
             amount: 0
           }
         },
-        totalAmount: 0,
+        totalAmount: 15,
+        sendToCart: [],
+        validated: false
+    }
+  },
+  mounted: function (){
+    this.bindScroll();
+  },
+  computed: {
+    isDisabled: function(){
+      var disabled = true;
+      if(this.sendToCart.length > 0) {
+        disabled = false;
+      }
+      return disabled;
+    },
+
+
+  },
+  methods: {
+    toClass: function(name){
+      return name.toLowerCase().replace(/\s+/g, '')
+    },
+    bindScroll: function (){
+      var el = document.getElementsByClassName("breakdown");
+      var self = this;
+      for(let i=0; i<el.length; i++){
+          el[i].addEventListener("wheel", self.handleScroll);
+      }
+
+    },
+    handleScroll: function (e) {
+        this.getScrollItem(e.path)
+        if(e.deltaY > 0) {
+          console.log("up")
+
+
+        } else {
+
+          console.log("down");
+        }
+    },
+    getScrollItem: function(scrollItems){
+      var scrolledItem;
+      var correctItem = scrollItems.filter(function(item)
+
+      {
+        if(item.classList){
+          if(item.classList.value.indexOf("breakdown") != -1) {
+              // /let gooditem = item.classList.value.replace("breakdown", "")
+              // console.log(item.classList.value.replace("breakdown", ""))
+              scrolledItem = item.classList.value.replace("breakdown", "")
+              return item;
+          }
+        }
+
+      });
+      var newitem = this.returned.filter(function(returnedItem){
+          return this.toClass(returnedItem.name) === scrolledItem
+      })
+      console.log(scrolledItem);
+      console.log(newitem);
+
+    },
+    additem: function(item) {
+      this.sendToCart.push(item);
+      item.amount += 1;
+      this.sumTotal(item.price);
+    },
+    removeitem: function(item) {
+      //set minimum for vhs 1, the rest 0
+      var minimum = item.name != "VHS" ? 0 : 1;
+
+      //make sure it doesnt go below minimum;
+      if(item.amount > minimum) {
+        this.sendToCart.splice(this.sendToCart.indexOf(item), 1)
+        item.amount -= 1;
+        this.sumTotal(-item.price);
+      }
+    },
+    sumTotal: function(price) {
+      this.totalAmount += price;
     }
   }
 }
@@ -125,6 +216,7 @@ h3 {
 ul {
   list-style-type: none;
 }
+
 ul li:first-child {
   font-weight: bold;
 }
@@ -159,8 +251,14 @@ button.decrease{
   position: absolute;
   right: 36px;
   top:-5px;
+  transform: translateY(0px);
+  transition: all 0.5s ease-out;
 }
-
+.amount li {
+  line-height: 50px;
+  margin: 0;
+  padding: 0;
+}
 .right > * {
   display: inline-block;
   /* float: right; */
@@ -173,6 +271,7 @@ button:focus {outline:0;}
   width: 25px;
   height: 25px;
   background: url(../assets/more.png);
+  margin-top: 6px;
 }
 .decrease {
   background: url(../assets/less.png);
@@ -181,7 +280,23 @@ button:focus {outline:0;}
   background: url(../assets/white-bg-watercolor.jpg);
   background-size: cover;
   width: 100%;
-height: 100%;
+  height: 100%;
+}
+button.add-to-cart{
+  background-color: #313131;
+  padding:12px 20px;
+  border-radius: 6px;
+  color: white;
+  font-size: 1em;
+  font-family: "Franklin Gothic";
+  font-variant: normal;
+  font-style: normal;
+  margin-top:1.4em;
+  transition: all 0.2s ease-out;
+}
+.add-to-cart:disabled {
+   background-color: #c3c3c3;
+   color: #a2a2a2;
 }
 
 </style>
