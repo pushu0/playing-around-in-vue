@@ -1,5 +1,17 @@
 <template>
   <div id="container">
+      <transition-group name="image" tag="div" class="image-container"
+      v-bind:css="false"
+      v-on:before-enter="beforeEnter"
+      v-on:enter="enter"
+      v-on:leave="leave"
+
+      appear>
+      <!-- <div class="image-container"> -->
+        <img class="image-bg" v-for="(image,e, index) in backgroundImages" :data-index="index" :src="image.src" :width="image.width" :height="image.height" :alt="image.name" :key="image.name">
+
+      <!-- </div> -->
+    </transition-group>
       <div class="text-container">
         <h1>VHS to DVD <br>
           <span>and Digital Service</span>
@@ -59,14 +71,17 @@
         <button class="add-to-cart" :disabled=isDisabled>Add to Cart</button>
       </div>
 
-      <!-- <ul>
-        <li v-for="item in sendToCart">{{item.name}}</li>
-      </ul> -->
       <div class="bg"></div>
   </div>
 </template>
 
 <script>
+import PicImg from "@/assets/pic.png"
+import VhsImg from "@/assets/vhs_pay.png"
+import MiniDvImg from "@/assets/mini dv.png"
+import IpadImg from "@/assets/ipad.png"
+import IphoneImg from "@/assets/iPhone 7.png"
+
 export default {
   data (){
     return {
@@ -94,6 +109,43 @@ export default {
             amount: 0
           }
         },
+        backgroundImages: {
+          "pic": {
+            name:"pic",
+            src: PicImg,
+            width:'3037',
+            height:'1594'
+          },
+          "vhs": {
+            name: "vhs",
+            // src: './assets/vhs.png',
+            src: VhsImg,
+            width:'3037',
+            height:'1594'
+          },
+          "mini dv": {
+            name:  "mini-dv",
+            // src: './assets/mini dv.png',
+            src: MiniDvImg,
+            width:'3037',
+            height:'1594'
+          },
+
+          "ipad": {
+            name:"ipad",
+            // src: './assets/ipad.png',
+            src: IpadImg,
+            width:'3037',
+            height:'1594'
+          },
+          "iphone": {
+            name: "iphone",
+            // src: './assets/iPhone 7.png',
+            src: IphoneImg,
+            width:'3037',
+            height:'1594'
+          }
+        },
         totalAmount: 15,
         sendToCart: [],
         validated: false
@@ -114,48 +166,67 @@ export default {
 
   },
   methods: {
+    beforeEnter: function(el) {
+      console.log("beforeEnter");
+      el.style.opacity = 0;
+    },
+    enter: function(el, done) {
+      console.log("enter");
+      let delay = el.dataset.index*200;
+      // console.log(delay);
+      setTimeout(function() {
+        //$(el).animate({ opacity: 1 }, 300, done);
+        var duration = 0.3;
+        TweenMax.to(el, duration, {opacity: 1, onComplete:done });
+      }, delay);
+    },
+    leave: function(el, done) {
+      console.log("leave");
+      let delay = el.dataset.index*100;
+      setTimeout(function() {
+        var duration = 0.3;
+        TweenMax.to(el, duration, {opacity: 0 ,onComplete:done });
+      }, delay);
+    },
     toClass: function(name){
       return name.toLowerCase().replace(/\s+/g, '')
     },
     bindScroll: function (){
       var el = document.getElementsByClassName("breakdown");
-      var self = this;
+      // var self = this;
       for(let i=0; i<el.length; i++){
-          el[i].addEventListener("wheel", self.handleScroll);
+          el[i].addEventListener("wheel", this.handleScroll);
       }
 
     },
     handleScroll: function (e) {
-        this.getScrollItem(e.path)
+      e.preventDefault()
+        var item = this.getScrollItem(e.path);
         if(e.deltaY > 0) {
-          console.log("up")
-
-
+          this.removeitem(item);
         } else {
-
-          console.log("down");
+          this.additem(item);
         }
     },
     getScrollItem: function(scrollItems){
       var scrolledItem;
       var correctItem = scrollItems.filter(function(item)
-
       {
         if(item.classList){
           if(item.classList.value.indexOf("breakdown") != -1) {
-              // /let gooditem = item.classList.value.replace("breakdown", "")
-              // console.log(item.classList.value.replace("breakdown", ""))
-              scrolledItem = item.classList.value.replace("breakdown", "")
+              scrolledItem = item.classList.value.replace("breakdown", "");
               return item;
           }
         }
-
       });
-      var newitem = this.returned.filter(function(returnedItem){
-          return this.toClass(returnedItem.name) === scrolledItem
-      })
-      console.log(scrolledItem);
-      console.log(newitem);
+      for(var item in this.returned) {
+        var match = this.toClass(this.returned[item].name)
+        var tomatch = this.toClass(scrolledItem)
+        if( tomatch == match) {
+          return this.returned[item]
+        }
+      }
+
 
     },
     additem: function(item) {
@@ -195,8 +266,8 @@ section {
   border-top: 1px solid #313131;
 }
 .text-container{
-    width: 55%;
-    margin-left: 40%;
+    width: 50%;
+    margin-left: 50%;
     text-align: right;
     position: absolute;
     top: 50%;
@@ -226,6 +297,7 @@ p {
 .breakdown {
   width: 100%;
   margin:0.6em auto;
+  overflow: hidden;
 }
 .left,
 .right {
@@ -258,6 +330,7 @@ button.decrease{
   line-height: 50px;
   margin: 0;
   padding: 0;
+  font-weight: bold;
 }
 .right > * {
   display: inline-block;
@@ -265,7 +338,9 @@ button.decrease{
   vertical-align: middle;
 
 }
-button:focus {outline:0;}
+button:focus {
+  outline:0;
+}
 .decrease,
 .increase{
   width: 25px;
@@ -298,5 +373,28 @@ button.add-to-cart{
    background-color: #c3c3c3;
    color: #a2a2a2;
 }
-
+.image-container {
+  width:3037px;
+  height:1594px;
+  position: absolute;
+  z-index: 1000;
+  transform: scale(0.7) rotateZ(-45deg);
+left: -1430px;
+top: 100px;
+}
+.image-bg{
+  position: absolute;
+  top:0;
+  left:0;
+}
+.image-item {
+  display: inline-block;
+}
+.image-enter-active, .image-leave-active {
+  transition: all 0.5s ease-out;
+}
+.image-enter, .image-leave-to /* .list-leave-active below version 2.1.8 */ {
+  opacity: 0;
+  transform: translateX(-1000px);
+}
 </style>
