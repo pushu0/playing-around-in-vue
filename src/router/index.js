@@ -13,14 +13,30 @@ export default new Router({
       name: 'User',
       component: User,
       // redirect: '/send',
-      redirect: '/vhs-to-dvd',
+      redirect: '/send',
+      children: [
+        {
+          // UserProfile will be rendered inside User's <router-view>
+          // when /user/:id/profile is matched
+          path: '/:state',
+          name: 'How it works?',
+          component: HowItWorks,
+          props: { default: true, sidebar: false }
+        },
+      ]
+    },
+    {
+      path: '/vhs-to-dvd',
+      name: 'Vhs to Dvd',
+      component: User,
+      // redirect: '/send',      
       children: [
         // {
         //   // UserProfile will be rendered inside User's <router-view>
         //   // when /user/:id/profile is matched
         //   path: '/:state',
-        //   name: 'How it works?',
-        //   component: HowItWorks,
+        //   name: 'Convert Vhs to Dvd',
+        //   component: vhsToDvd,
         //   props: { default: true, sidebar: false }
         // },
         {
@@ -36,8 +52,6 @@ export default new Router({
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         resolve({ x: 0, y: 0 })
-        // console.log("to "+to+" from "+from+" savedPosition "+savedPosition)
-        // console.log(to)
       }, 500)
     })
   }

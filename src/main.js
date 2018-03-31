@@ -3,13 +3,15 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
-
+import {TweenMax, Power2, TimelineLite} from "gsap";
+import lodash from 'lodash'
 
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */
-
-new Vue({
+// Vue.prototype._ = lodash;
+// Vue.use(_);
+const revive = new Vue({
   el: '#app',
   router,
   components: { App },

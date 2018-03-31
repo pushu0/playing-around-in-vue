@@ -12,14 +12,21 @@
 
       <!-- </div> -->
     </transition-group>
-      <div class="text-container">
-        <h1>VHS to DVD <br>
+    <transition-group name="text" tag="div" class="text-container"
+    v-bind:css="false"
+    v-on:before-enter="beforeEnter"
+    v-on:enter="enter"
+    v-on:leave="leave"
+
+    appear>
+      <!-- <div class="text-container"> -->
+        <h1 key="h1" data-index="1">VHS to DVD <br>
           <span>and Digital Service</span>
         </h1>
-        <p>High tech videotape conversion meets simple mail-in service so you can relive the good ole days digitally.</p>
-        <section>
+        <p key="p" data-index="2">High tech videotape conversion meets simple mail-in service so you can relive the good ole days digitally.</p>
+        <section key="section-1" data-index="3">
           <h3>HOW MANY TAPES DO YOU WANT TO DIGITIZE?</h3>
-          <div v-for="tape in tapes" class="breakdown" >
+          <div v-for="tape in tapes" :class="[toClass(tape.name), 'breakdown']" >
             <div class="left">
               <ul>
                 <li>{{tape.name}}</li>
@@ -28,15 +35,15 @@
             </div>
             <div class="right">
               <button class="decrease" @click="removeitem(tape)"></button>
-              <ul class="amount" :style="'translateY('+tape.amount+'em)'">
-                <!-- <li v-for="(amount, index) in 20">{{index}}</li> -->
-                <li>{{tape.amount}}</li>
+              <ul class="amount" :style="{transform: 'translateY(-'+tape.amount*50+'px)'}">
+                <li v-for="(amount, index) in 20">{{index}}</li>
+                <!-- <li>{{item.amount}}</li> -->
               </ul>
               <button class="increase" @click="additem(tape)"></button>
             </div>
           </div>
         </section>
-        <section>
+        <section key="section-2" data-index="4">
           <h3>WHAT DO YOU WANT TO GET BACK?</h3>
           <div v-for="(item, index) in returned" :class="[toClass(item.name), 'breakdown']">
             <div class="left">
@@ -56,8 +63,8 @@
           </div>
 
         </section>
-        <section>
-          <div class="breakdown">
+        <section key="section-3" data-index="5">
+          <div class="total breakdown">
             <div class="left">
               <ul>
                 <li>Total</li>
@@ -68,9 +75,9 @@
             </div>
           </div>
         </section>
-        <button class="add-to-cart" :disabled=isDisabled>Add to Cart</button>
-      </div>
-
+        <button class="add-to-cart" :disabled=isDisabled key="button-1" data-index="6">Add to Cart</button>
+      <!-- </div> -->
+    </transition-group>
       <div class="bg"></div>
   </div>
 </template>
@@ -80,7 +87,10 @@ import PicImg from "@/assets/pic.png"
 import VhsImg from "@/assets/vhs_pay.png"
 import MiniDvImg from "@/assets/mini dv.png"
 import IpadImg from "@/assets/ipad.png"
-import IphoneImg from "@/assets/iPhone 7.png"
+import IphoneImg from "@/assets/iPhone 7.png";
+
+
+// import _ from "lodash";
 
 export default {
   data (){
@@ -130,7 +140,6 @@ export default {
             width:'3037',
             height:'1594'
           },
-
           "ipad": {
             name:"ipad",
             // src: './assets/ipad.png',
@@ -146,6 +155,7 @@ export default {
             height:'1594'
           }
         },
+        maxAmount: 19,
         totalAmount: 15,
         sendToCart: [],
         validated: false
@@ -153,35 +163,51 @@ export default {
   },
   mounted: function (){
     this.bindScroll();
+
+
+
   },
   computed: {
     isDisabled: function(){
       var disabled = true;
-      if(this.sendToCart.length > 0) {
-        disabled = false;
+      for(var cartitem in this.returned){
+          if(this.returned[cartitem].amount > 0) {
+            disabled = false;
+          }
       }
       return disabled;
     },
-
-
   },
   methods: {
     beforeEnter: function(el) {
-      console.log("beforeEnter");
-      el.style.opacity = 0;
+      // console.log("beforeEnter");
+      if(el.tagName == "IMG"){
+        el.style.opacity = 0;
+        el.style.transform = 'translateX(-500px)';
+      } else {
+        el.style.opacity = 0;
+        el.style.transform = 'translateX(-100px)';
+      }
+
+
     },
     enter: function(el, done) {
-      console.log("enter");
-      let delay = el.dataset.index*200;
+      // console.log("enter");
+      let delay;
+      if(el.tagName == "IMG"){
+        delay = el.dataset.index * 300 + 400;
+      } else {
+        delay = el.dataset.index * 100;
+      }
       // console.log(delay);
       setTimeout(function() {
         //$(el).animate({ opacity: 1 }, 300, done);
-        var duration = 0.3;
-        TweenMax.to(el, duration, {opacity: 1, onComplete:done });
+        var duration = 0.5;
+        TweenMax.to(el, duration, {transform: 'translateX(0px)', opacity: 1, onComplete:done });
       }, delay);
     },
     leave: function(el, done) {
-      console.log("leave");
+      // console.log("leave");
       let delay = el.dataset.index*100;
       setTimeout(function() {
         var duration = 0.3;
@@ -194,20 +220,22 @@ export default {
     bindScroll: function (){
       var el = document.getElementsByClassName("breakdown");
       // var self = this;
+
       for(let i=0; i<el.length; i++){
           el[i].addEventListener("wheel", this.handleScroll);
       }
-
     },
-    handleScroll: function (e) {
-      e.preventDefault()
+    //try moving throttle after preventDefault
+    handleScroll: _.throttle(function (e) {
+        e.preventDefault()
+        // console.log(_.throttle(function(){},100))
         var item = this.getScrollItem(e.path);
         if(e.deltaY > 0) {
           this.removeitem(item);
         } else {
           this.additem(item);
         }
-    },
+    }, 300),
     getScrollItem: function(scrollItems){
       var scrolledItem;
       var correctItem = scrollItems.filter(function(item)
@@ -222,17 +250,23 @@ export default {
       for(var item in this.returned) {
         var match = this.toClass(this.returned[item].name)
         var tomatch = this.toClass(scrolledItem)
-        if( tomatch == match) {
+        if(tomatch == match) {
           return this.returned[item]
+        }
+        // !!!!!! needs more work for when there are more products
+        else if(tomatch == "vhs") {
+          return this.tapes["vhs"]
         }
       }
 
 
     },
     additem: function(item) {
-      this.sendToCart.push(item);
-      item.amount += 1;
-      this.sumTotal(item.price);
+      if(item.amount < this.maxAmount) {
+        this.sendToCart.push(item);
+        item.amount += 1;
+        this.sumTotal(item.price);
+      }
     },
     removeitem: function(item) {
       //set minimum for vhs 1, the rest 0
@@ -272,6 +306,8 @@ section {
     position: absolute;
     top: 50%;
     transform: translate(0, -50%) scale(0.8);
+    z-index: 10;
+    overflow: hidden;
 }
 h1 {
   font-size: 3em;
@@ -311,12 +347,7 @@ p {
   height: 3em;
   position: relative;
 }
-button{
-  border: none;
-}
-button.decrease{
-  margin-right: 80px;
-}
+
 .amount {
   font-size: 3em;
   overflow: hidden;
@@ -332,6 +363,11 @@ button.decrease{
   padding: 0;
   font-weight: bold;
 }
+.total .amount {
+  left: auto;
+  right: 0;
+  font-weight: bold;
+}
 .right > * {
   display: inline-block;
   /* float: right; */
@@ -340,6 +376,12 @@ button.decrease{
 }
 button:focus {
   outline:0;
+}
+button{
+  border: none;
+}
+button.decrease{
+  margin-right: 80px;
 }
 .decrease,
 .increase{
@@ -377,10 +419,10 @@ button.add-to-cart{
   width:3037px;
   height:1594px;
   position: absolute;
-  z-index: 1000;
+  z-index: 1;
   transform: scale(0.7) rotateZ(-45deg);
-left: -1430px;
-top: 100px;
+  left: calc(-3037px + 110%);
+  top: 100px;
 }
 .image-bg{
   position: absolute;
@@ -397,4 +439,5 @@ top: 100px;
   opacity: 0;
   transform: translateX(-1000px);
 }
+
 </style>
