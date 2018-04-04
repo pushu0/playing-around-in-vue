@@ -1,6 +1,6 @@
 <template>
   <div id="howitworks">
-    {{stateindex}}
+    {{'how it works state: ' +state }}
     <div id="slider">
         <div class="slider-circle"></div>
         <div class="slider-line"></div>
@@ -120,6 +120,7 @@
 </template>
 
 <script>
+// import _ from 'lodash'
 export default {
   name: 'HowItWorks',
   // props: ['routerstate'],
@@ -164,19 +165,25 @@ export default {
         //check if the route is same as state
 
         //initialize !!!!!!!!!!!!!!!!
+        console.log(this.$route.path)
         if(this.$route.path != this.state) {
           this.state = this.$route.params['state'];
-
-
+          console.log(this.$route.params['state'])
+          // this.state = 'blank';
         }
         this.initSlider(this.getState());
         //rotate vhs tape loop
         TweenMax.to("#vhs-tape", 3.3, {rotation: 360, transformOrigin: "50% 50%", repeat: -1, ease:Linear.easeNone}, "fadeIn")
+        var self = this;
+        this.$parent.$on('handle-scroll', function(e) {
+          self.handleWheel(e)
+        })
   },
   computed: {
     activemsg: function (){
       console.log(activeindex);
     },
+
   },
   watch: {
     activeindex: function (newVal, oldVal){
@@ -185,8 +192,7 @@ export default {
       }
     },
     '$route.params.state': function (newValue, oldValue){
-        console.log("route state")
-
+        console.log("route state "+newValue)
         for(let j=0; j < this.availablestates.length; j++){
           if(this.availablestates[j] == newValue){
 
@@ -201,6 +207,24 @@ export default {
     }
   },
   methods: {
+    handleWheel: _.debounce(function(e){
+      var increment = 0;
+        if(e.deltaY > 0) {
+          increment = 1;
+       } else {
+          increment = -1;
+       }
+      if(increment != 0) {
+        this.changeState(parseInt(this.getState())+increment);
+      }
+    }, 500),
+    // handleWheel: function(e){
+    //     if(e.deltaY > 0) {
+    //       this.changeState(1);
+    //    } else {
+    //       this.changeState(-1);
+    //    }
+    // },
     initSlider: function(selectedIndex) {
       this.sliderSelect(selectedIndex);
       var circles = document.querySelectorAll(".slider-circle");
@@ -274,11 +298,12 @@ export default {
     //e is the index of the state
     nextprevState: function(e){
         var oldindex;
-        oldindex = parseInt(this.getState()) + e;
-        this.changeState(oldindex);
+        var newindex;
+        oldindex = parseInt(this.getState())
+        newindex = oldindex + e;
+        this.changeState(newindex);
     },
     changeState: function (e){
-      console.log(e);
 
         var oldindex = e;
         var oldState;
@@ -287,6 +312,7 @@ export default {
         // if(!_isNumber(oldindex)) {
         //   oldindex = this.activeindex;
         // }
+
 
          switch(oldindex) {
            case 0:
@@ -301,21 +327,32 @@ export default {
            // this.state = 'digitize'
            oldState = '/receive'
            break;
+           case 3:
+           oldState = '/vhs-to-dvd'
+           break;
            default:
            oldState = '';
            break;
          }
-
+         console.log('ChangeState: '+ oldState);
          if(oldState.length != '') {
+           this.state = oldState;
            this.$router.push({path:oldState})
          }
+
+    },
+    beforeDestroy: function() {
+      console.log('before destroy')
     },
     getState: function(){
       var self = this;
       //returns number
       return _.findKey(this.availablestates, function(states) { return states==self.state; })
     },
-
+    changeMainState: function (){
+      this.$destroy();
+      this.$parent.$emit('gotoNextPage');
+    }
 
   }
 }

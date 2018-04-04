@@ -90,7 +90,11 @@ import IpadImg from "@/assets/ipad.png"
 import IphoneImg from "@/assets/iPhone 7.png";
 
 
+<<<<<<< HEAD
 import _ from "lodash";
+=======
+// import _ from "lodash";
+>>>>>>> d227bc02de24b4b404df1e5c127e1fd09340c879
 
 export default {
   data (){
@@ -366,6 +370,10 @@ p {
 .total .amount {
   left: auto;
   right: 0;
+<<<<<<< HEAD
+=======
+  font-weight: bold;
+>>>>>>> d227bc02de24b4b404df1e5c127e1fd09340c879
 }
 .right > * {
   display: inline-block;
